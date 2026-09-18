@@ -24,6 +24,59 @@ interface Photo {
   name: string;
 }
 
+/**
+ * Where freestyle photos start: a centred grid (as many columns as rows, roughly) with a slight
+ * tilt and overlap, as fractions of the square canvas. The user then drags them around in the editor.
+ */
+function freestylePlacement(
+  index: number,
+  count: number,
+  aspect: number,
+): { x: number; y: number; size: number; rotation: number } {
+  const cols = Math.max(1, Math.ceil(Math.sqrt(count)));
+  const rows = Math.max(1, Math.ceil(count / cols));
+  const col = index % cols;
+  const row = Math.floor(index / cols);
+  const itemsInRow = row === rows - 1 ? count - row * cols : cols;
+  const offset = (cols - itemsInRow) / 2; // centre a short last row
+  const jitter = ((index * 7) % 5) * 0.01;
+  return {
+    x: (col + offset + 0.5) / cols + jitter,
+    y: (row + 0.5) / rows + jitter,
+    // `size` is the photo height; keep the longer edge inside the cell (plus a little overlap).
+    size: (Math.min(0.9 / cols, 0.9 / rows) * 1.08) / Math.max(1, aspect),
+    rotation: ((index * 37) % 21) - 10,
+  };
+}
+
+/** Draws the freestyle arrangement so the collage screen previews what the editor will open. */
+function renderFreestylePreview(
+  photos: Photo[],
+  background: string,
+  width: number,
+): HTMLCanvasElement {
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = width;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Canvas 2D is not available.');
+  ctx.fillStyle = background;
+  ctx.fillRect(0, 0, width, width);
+  photos.forEach((photo, i) => {
+    const place = freestylePlacement(i, photos.length, photo.canvas.width / photo.canvas.height);
+    const h = place.size * width;
+    const w = h * (photo.canvas.width / photo.canvas.height);
+    ctx.save();
+    ctx.translate(place.x * width, place.y * width);
+    ctx.rotate((place.rotation * Math.PI) / 180);
+    ctx.shadowColor = 'rgba(0,0,0,0.35)';
+    ctx.shadowBlur = width * 0.02;
+    ctx.drawImage(photo.canvas, -w / 2, -h / 2, w, h);
+    ctx.restore();
+  });
+  return canvas;
+}
+
 /** Collage builder: pick photos, choose a layout, tweak spacing, then continue in the editor. */
 export function CollageScreen() {
   const setScreen = useEditorStore((s) => s.setScreen);
@@ -63,6 +116,8 @@ export function CollageScreen() {
   }, [mode, photos, direction, candidates, layoutId]);
 
   const preview = useMemo(() => {
+    if (mode === 'freestyle')
+      return photos.length ? renderFreestylePreview(photos, background, 600) : null;
     if (!layout) return null;
     try {
       return renderCollage({
@@ -122,10 +177,11 @@ export function CollageScreen() {
       openCanvas(base, 'collage.png');
       photos.forEach((p, i) => {
         const sticker = createImageSticker(p.canvas);
-        sticker.x = 0.3 + (i % 3) * 0.2;
-        sticker.y = 0.3 + Math.floor(i / 3) * 0.2;
-        sticker.rotation = ((i * 37) % 21) - 10;
-        sticker.size = 0.35;
+        const place = freestylePlacement(i, photos.length, p.canvas.width / p.canvas.height);
+        sticker.x = place.x;
+        sticker.y = place.y;
+        sticker.rotation = place.rotation;
+        sticker.size = place.size;
         addLayer(sticker, i === photos.length - 1);
       });
       return;
