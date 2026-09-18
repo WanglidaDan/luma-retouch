@@ -68,7 +68,7 @@ test.describe('beauty', () => {
           w: number,
           h: number,
           makeup: Makeup,
-        ) => HTMLCanvasElement | null;
+        ) => ImageData | null;
         defaultPortraitSettings: () => { makeup: Makeup };
       };
       const core = (window as unknown as { __pb: { core: CoreApi } }).__pb.core;
@@ -90,9 +90,7 @@ test.describe('beauty', () => {
         lipstick: { color: '#ff0000', opacity: 80 },
         blush: { color: '#ff88aa', opacity: 60 },
       });
-      const mk = makeup
-        ? makeup.getContext('2d')!.getImageData(0, 0, 300, 300).data
-        : new Uint8ClampedArray();
+      const mk = makeup ? makeup.data : new Uint8ClampedArray();
       let painted = 0;
       for (let i = 3; i < mk.length; i += 4) if (mk[i]! > 0) painted++;
       const none = core.buildMakeupOverlay([face], 300, 300, core.defaultPortraitSettings().makeup);

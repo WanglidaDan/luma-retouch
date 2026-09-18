@@ -17,7 +17,7 @@ export interface PortraitRenderInput {
   mask: TextureSource | null;
   /** Increment whenever `mask` pixels change so the renderer re-uploads it. */
   maskVersion: number;
-  /** Premultiplied RGBA canvas with lipstick, blush, eyebrows, contact lenses etc. */
+  /** Straight-alpha RGBA ImageData with lipstick, blush, eyebrows, contact lenses etc. */
   makeup: TextureSource | null;
   makeupVersion: number;
   displacement: DisplacementField | null;

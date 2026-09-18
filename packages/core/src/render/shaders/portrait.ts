@@ -84,12 +84,17 @@ void main() {
   if (u_useMakeup > 0.5) {
     vec4 m = texture(u_makeup, v_uv);
     if (m.a > 0.001) {
-      vec3 mc = m.rgb / max(m.a, 1e-4); // un-premultiply
-      // Soft-light style blend keeps skin texture under the colour.
-      vec3 multiply = c * mc;
-      vec3 softLight = mix(2.0 * c * mc + c * c * (1.0 - 2.0 * mc), sqrt(c) * (2.0 * mc - 1.0) + 2.0 * c * (1.0 - mc), step(0.5, mc));
-      vec3 blended = mix(multiply, softLight, 0.5);
-      c = mix(c, blended, m.a);
+      vec3 mc = m.rgb; // straight alpha (ImageData upload)
+      // Makeup blend: hue from the makeup, saturation halfway between photo and makeup, and the
+      // photo's own brightness/texture, darkened in proportion to how dark the makeup colour is
+      // (eyeliner and brows darken, lipstick keeps highlights, light colours lift dark pixels a little).
+      vec3 ch = rgb2hsl(c);
+      vec3 mh = rgb2hsl(mc);
+      float darken = min(1.0, 0.3 + 1.2 * mh.z);
+      float lightness = mix(ch.z * darken, mh.z, 0.25 * m.a);
+      float saturation = mix(ch.y, mh.y, 0.55);
+      vec3 blended = hsl2rgb(vec3(mh.x, clamp(saturation, 0.0, 1.0), clamp(lightness, 0.0, 1.0)));
+      c = mix(c, blended, clamp(m.a, 0.0, 1.0));
     }
   }
   fragColor = vec4(clamp(c, 0.0, 1.0), src.a);

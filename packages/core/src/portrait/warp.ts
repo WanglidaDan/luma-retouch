@@ -116,38 +116,38 @@ export function buildReshapeField(
     const centreX = nose.x;
 
     if (reshape.faceSlim) {
-      const k = s(reshape.faceSlim) * fw * 0.08;
+      const k = s(reshape.faceSlim) * fw * 0.11;
       for (const idx of [LANDMARK.leftCheek, LANDMARK.leftJaw]) {
         const p = pt(face, idx);
-        pushPoint(field, p.x, p.y, (centreX - p.x > 0 ? 1 : -1) * k, 0, fw * 0.45, aspect);
+        pushPoint(field, p.x, p.y, (centreX - p.x > 0 ? 1 : -1) * k, 0, fw * 0.4, aspect);
       }
       for (const idx of [LANDMARK.rightCheek, LANDMARK.rightJaw]) {
         const p = pt(face, idx);
-        pushPoint(field, p.x, p.y, (centreX - p.x > 0 ? 1 : -1) * k, 0, fw * 0.45, aspect);
+        pushPoint(field, p.x, p.y, (centreX - p.x > 0 ? 1 : -1) * k, 0, fw * 0.4, aspect);
       }
     }
     if (reshape.jaw) {
-      const k = s(reshape.jaw) * fw * 0.06;
+      const k = s(reshape.jaw) * fw * 0.08;
       const l = pt(face, LANDMARK.leftJaw);
       const r = pt(face, LANDMARK.rightJaw);
-      pushPoint(field, l.x, l.y, k, (k * 0.3) / aspect, fw * 0.3, aspect);
-      pushPoint(field, r.x, r.y, -k, (k * 0.3) / aspect, fw * 0.3, aspect);
+      pushPoint(field, l.x, l.y, k, (k * 0.3) / aspect, fw * 0.24, aspect);
+      pushPoint(field, r.x, r.y, -k, (k * 0.3) / aspect, fw * 0.24, aspect);
     }
     if (reshape.chin) {
-      const k = s(reshape.chin) * fw * 0.08;
+      const k = s(reshape.chin) * fw * 0.14;
       pushPoint(field, chin.x, chin.y, 0, k / aspect, fw * 0.35, aspect);
     }
     if (reshape.forehead) {
       const top = pt(face, LANDMARK.forehead);
-      const k = s(reshape.forehead) * fw * 0.08;
+      const k = s(reshape.forehead) * fw * 0.14;
       pushPoint(field, top.x, top.y, 0, -k / aspect, fw * 0.45, aspect);
     }
     if (reshape.headSize) {
       const centre = { x: (between.x + chin.x) / 2, y: (between.y + chin.y) / 2 };
-      bulgePoint(field, centre.x, centre.y, fw * 1.1, -s(reshape.headSize) * 0.12, aspect);
+      bulgePoint(field, centre.x, centre.y, fw * 1.1, -s(reshape.headSize) * 0.2, aspect);
     }
     if (reshape.noseWidth) {
-      const k = s(reshape.noseWidth) * fw * 0.03;
+      const k = s(reshape.noseWidth) * fw * 0.06;
       const l = pt(face, LANDMARK.noseLeft);
       const r = pt(face, LANDMARK.noseRight);
       pushPoint(field, l.x, l.y, k, 0, fw * 0.14, aspect);
@@ -156,18 +156,18 @@ export function buildReshapeField(
     if (reshape.eyeSize) {
       for (const idx of [LANDMARK.leftIrisCenter, LANDMARK.rightIrisCenter]) {
         const p = pt(face, idx);
-        bulgePoint(field, p.x, p.y, fw * 0.2, s(reshape.eyeSize) * 0.28, aspect);
+        bulgePoint(field, p.x, p.y, fw * 0.2, s(reshape.eyeSize) * 0.45, aspect);
       }
     }
     if (reshape.eyeDistance) {
-      const k = s(reshape.eyeDistance) * fw * 0.04;
+      const k = s(reshape.eyeDistance) * fw * 0.07;
       const l = pt(face, LANDMARK.leftIrisCenter);
       const r = pt(face, LANDMARK.rightIrisCenter);
       pushPoint(field, l.x, l.y, -k, 0, fw * 0.22, aspect);
       pushPoint(field, r.x, r.y, k, 0, fw * 0.22, aspect);
     }
     if (reshape.eyeLift) {
-      const k = s(reshape.eyeLift) * fw * 0.03;
+      const k = s(reshape.eyeLift) * fw * 0.06;
       const l = pt(face, LANDMARK.leftEyeOuter);
       const r = pt(face, LANDMARK.rightEyeOuter);
       pushPoint(field, l.x, l.y, 0, -k / aspect, fw * 0.16, aspect);
@@ -178,7 +178,7 @@ export function buildReshapeField(
         x: (pt(face, LANDMARK.upperLip).x + pt(face, LANDMARK.lowerLip).x) / 2,
         y: (pt(face, LANDMARK.upperLip).y + pt(face, LANDMARK.lowerLip).y) / 2,
       };
-      bulgePoint(field, c.x, c.y, fw * 0.3, s(reshape.mouthSize) * 0.22, aspect);
+      bulgePoint(field, c.x, c.y, fw * 0.3, s(reshape.mouthSize) * 0.35, aspect);
     }
   }
 

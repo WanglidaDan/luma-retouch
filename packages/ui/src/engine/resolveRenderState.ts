@@ -44,7 +44,7 @@ class PortraitCache {
   private mask: ImageData | null = null;
   private maskVersion = 0;
   private makeupKey = '';
-  private makeup: HTMLCanvasElement | null = null;
+  private makeup: ImageData | null = null;
   private makeupVersion = 0;
   private fieldKey = '';
   private field: DisplacementField | null = null;

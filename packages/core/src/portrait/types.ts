@@ -90,7 +90,7 @@ export function defaultPortraitSettings(): PortraitSettings {
       lipstick: { color: '#c2185b', opacity: 0 },
       blush: { color: '#f48fb1', opacity: 0 },
       eyebrows: { color: '#3e2723', opacity: 0 },
-      eyeshadow: { color: '#8d6e63', opacity: 0 },
+      eyeshadow: { color: '#6d4c41', opacity: 0 },
       contacts: { color: '#5d8aa8', opacity: 0 },
       eyeliner: { color: '#1a1a1a', opacity: 0 },
     },
@@ -166,7 +166,7 @@ export const MAKEUP_DEFINITIONS: readonly {
   {
     key: 'eyeshadow',
     label: 'Eyeshadow',
-    swatches: ['#8d6e63', '#ba68c8', '#4fc3f7', '#ffb74d', '#a1887f', '#ef9a9a', '#90a4ae'],
+    swatches: ['#6d4c41', '#7b1fa2', '#0277bd', '#ef6c00', '#5d4037', '#c62828', '#455a64'],
   },
   {
     key: 'contacts',

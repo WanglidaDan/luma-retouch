@@ -61,6 +61,7 @@ Never:
 - Tailwind 4 only scans the CSS file's own package: `packages/ui/src/styles.css` needs `@source './';` or every class in `packages/ui` silently disappears.
 - `fetch` must not be stored as a class field default (`fetchImpl = fetch` throws "Illegal invocation"); wrap it in an arrow function.
 - Zustand: never put the whole store object in a `useEffect` dependency list (it changes every update and loops); select `set` separately.
+- Portrait masks and the makeup overlay must be handed to WebGL as `ImageData`, never as a canvas: canvases store premultiplied alpha, so pixels with low alpha lose their colour (the first makeup looked like flat paint for this reason).
 - Textures are uploaded with `UNPACK_FLIP_Y` and WebGL framebuffers are bottom-up, so the present pass must NOT flip (`u_flip = 0`); a flip shows the photo upside down and the e2e orientation checks (sun above lake) catch it.
 - Displacement fields are authored top-down but textures are bottom-up after the source flip: `Renderer.syncDisplacement` flips rows and negates `dy`.
 - Gemini has no mask input; `runAiTask` describes the mask region in the prompt unless an OpenAI key exists.

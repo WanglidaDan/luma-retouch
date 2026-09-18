@@ -116,9 +116,10 @@ test.describe('adjust, filters, effects', () => {
       'invert',
     ]) {
       await page.getByTestId(`effect-${effect}`).click();
-      await page.waitForTimeout(150);
-      const stats = await previewStats(page);
-      expect(stats.checksum, effect).not.toBe(base.checksum);
+      // Rendering is coalesced to animation frames, so poll instead of sleeping.
+      await expect
+        .poll(async () => (await previewStats(page)).checksum, { message: effect, timeout: 10000 })
+        .not.toBe(base.checksum);
       expect(await storeState<string>(page, 'snapshot.effect.id')).toBe(effect);
     }
     await page.getByTestId('effect-blur').click();

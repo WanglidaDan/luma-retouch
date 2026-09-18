@@ -10,11 +10,10 @@ import {
   RIGHT_EYEBROW,
   faceWidth,
   polygon,
-  centroid,
   LANDMARK,
   type FaceLandmarks,
 } from './regions';
-import type { MakeupSettings } from './types';
+import type { MakeupItem, MakeupSettings } from './types';
 import { hexToRgb } from '../math/color';
 
 /** Draws a closed polygon path from normalised points. */
@@ -126,7 +125,7 @@ export function buildPortraitMask(
   return out;
 }
 
-/** Draws a soft ellipse (used for blush and eyeshadow). */
+/** Draws a soft ellipse (radial falloff) in the given colour and peak alpha. */
 function softEllipse(
   ctx: CanvasRenderingContext2D,
   cx: number,
@@ -136,30 +135,39 @@ function softEllipse(
   color: string,
   alpha: number,
 ): void {
-  const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(rx, ry));
-  const [r, gg, b] = hexToRgb(color).map((v) => Math.round(v * 255));
-  g.addColorStop(0, `rgba(${r},${gg},${b},${alpha})`);
-  g.addColorStop(1, `rgba(${r},${gg},${b},0)`);
+  const [r, g, b] = hexToRgb(color).map((v) => Math.round(v * 255));
+  const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
+  grad.addColorStop(0, `rgba(${r},${g},${b},${alpha})`);
+  grad.addColorStop(0.55, `rgba(${r},${g},${b},${alpha * 0.55})`);
+  grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
   ctx.save();
   ctx.translate(cx, cy);
-  ctx.scale(1, ry / Math.max(rx, 1e-3));
-  ctx.fillStyle = g;
+  ctx.scale(rx, ry);
+  ctx.fillStyle = grad;
   ctx.beginPath();
-  ctx.arc(0, 0, rx, 0, Math.PI * 2);
+  ctx.arc(0, 0, 1, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 }
 
+/** Upper-eyelid points of an eye ring (from the inner corner over the top to the outer corner). */
+function upperLid(face: FaceLandmarks, ring: readonly number[]): { x: number; y: number }[] {
+  const pts = polygon(face, ring);
+  // Rings run outer corner → lower lid → inner corner → upper lid → back to the outer corner.
+  return [...pts.slice(8), pts[0]!];
+}
+
 /**
- * Builds the premultiplied RGBA makeup overlay: lipstick on the lips, blush on the cheeks,
- * eyebrow tint, eyeshadow above the eyes, eyeliner along the upper lash line, coloured contacts on the iris.
+ * Builds the RGBA makeup overlay (straight alpha). Each item is drawn where the landmarks put it,
+ * with soft edges; the shader then blends it in "colour" mode (hue and saturation from the
+ * makeup, brightness and texture from the photo) so lips, brows and lids keep their shading.
  */
 export function buildMakeupOverlay(
   faces: FaceLandmarks[],
   width: number,
   height: number,
   makeup: MakeupSettings,
-): HTMLCanvasElement | null {
+): ImageData | null {
   const active = Object.values(makeup).some((item) => item.opacity > 0);
   if (!active || faces.length === 0) return null;
   const canvas = document.createElement('canvas');
@@ -169,13 +177,16 @@ export function buildMakeupOverlay(
   if (!ctx) throw new Error('Canvas 2D is not available.');
   for (const face of faces) {
     const fw = faceWidth(face) * width;
+    const strength = (item: MakeupItem, max: number): number => (item.opacity / 100) * max;
+
     if (makeup.lipstick.opacity > 0) {
       ctx.save();
-      ctx.filter = `blur(${fw * 0.006}px)`;
+      ctx.filter = `blur(${fw * 0.012}px)`;
       ctx.fillStyle = makeup.lipstick.color;
-      ctx.globalAlpha = makeup.lipstick.opacity / 100;
+      ctx.globalAlpha = strength(makeup.lipstick, 0.7);
       path(ctx, polygon(face, LIPS_OUTER), width, height);
       ctx.fill();
+      // Keep the mouth opening (teeth) clean.
       ctx.globalCompositeOperation = 'destination-out';
       ctx.globalAlpha = 1;
       path(ctx, polygon(face, LIPS_INNER), width, height);
@@ -189,19 +200,19 @@ export function buildMakeupOverlay(
         softEllipse(
           ctx,
           p.x * width,
-          p.y * height + fw * 0.03,
+          p.y * height + fw * 0.02,
           fw * 0.16,
           fw * 0.11,
           makeup.blush.color,
-          (makeup.blush.opacity / 100) * 0.7,
+          strength(makeup.blush, 0.42),
         );
       }
     }
     if (makeup.eyebrows.opacity > 0) {
       ctx.save();
-      ctx.filter = `blur(${fw * 0.01}px)`;
+      ctx.filter = `blur(${fw * 0.006}px)`;
       ctx.fillStyle = makeup.eyebrows.color;
-      ctx.globalAlpha = (makeup.eyebrows.opacity / 100) * 0.8;
+      ctx.globalAlpha = strength(makeup.eyebrows, 1.0);
       for (const region of [LEFT_EYEBROW, RIGHT_EYEBROW]) {
         path(ctx, polygon(face, region), width, height);
         ctx.fill();
@@ -209,19 +220,35 @@ export function buildMakeupOverlay(
       ctx.restore();
     }
     if (makeup.eyeshadow.opacity > 0) {
-      for (const region of [LEFT_EYE, RIGHT_EYE]) {
-        const c = centroid(face, region);
-        softEllipse(
-          ctx,
-          c.x * width,
-          c.y * height - fw * 0.05,
-          fw * 0.14,
-          fw * 0.08,
-          makeup.eyeshadow.color,
-          (makeup.eyeshadow.opacity / 100) * 0.75,
+      const [r, g, b] = hexToRgb(makeup.eyeshadow.color).map((v) => Math.round(v * 255));
+      for (const ring of [LEFT_EYE, RIGHT_EYE]) {
+        const lid = upperLid(face, ring);
+        const lift = fw * 0.075; // how far the shadow reaches above the lash line
+        const top = Math.min(...lid.map((p) => p.y)) * height;
+        const bottom = Math.max(...lid.map((p) => p.y)) * height;
+        const grad = ctx.createLinearGradient(0, bottom, 0, top - lift);
+        const a = strength(makeup.eyeshadow, 0.85);
+        grad.addColorStop(0, `rgba(${r},${g},${b},${a})`);
+        grad.addColorStop(0.45, `rgba(${r},${g},${b},${a * 0.6})`);
+        grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
+        ctx.save();
+        ctx.filter = `blur(${fw * 0.012}px)`;
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        lid.forEach((p, i) =>
+          i === 0 ? ctx.moveTo(p.x * width, p.y * height) : ctx.lineTo(p.x * width, p.y * height),
         );
+        for (let i = lid.length - 1; i >= 0; i--) {
+          const p = lid[i]!;
+          // Widen slightly towards the outer corner for a winged shape.
+          const t = i / (lid.length - 1);
+          ctx.lineTo(p.x * width, p.y * height - lift * (0.7 + 0.5 * t));
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
       }
-      // Keep the eye itself clean.
+      // Never paint over the eye itself.
       ctx.save();
       ctx.globalCompositeOperation = 'destination-out';
       for (const region of [LEFT_EYE, RIGHT_EYE]) {
@@ -233,15 +260,14 @@ export function buildMakeupOverlay(
     if (makeup.eyeliner.opacity > 0) {
       ctx.save();
       ctx.strokeStyle = makeup.eyeliner.color;
-      ctx.globalAlpha = makeup.eyeliner.opacity / 100;
-      ctx.lineWidth = Math.max(1, fw * 0.012);
+      ctx.globalAlpha = strength(makeup.eyeliner, 1.0);
+      ctx.lineWidth = Math.max(1.5, fw * 0.011);
       ctx.lineCap = 'round';
-      // Upper lash line: the second half of each eye ring runs along the top lid.
-      for (const region of [LEFT_EYE, RIGHT_EYE]) {
-        const pts = polygon(face, region);
-        const upper = pts.slice(8).concat([pts[0]!]);
+      ctx.lineJoin = 'round';
+      for (const ring of [LEFT_EYE, RIGHT_EYE]) {
+        const lid = upperLid(face, ring);
         ctx.beginPath();
-        upper.forEach((p, i) =>
+        lid.forEach((p, i) =>
           i === 0 ? ctx.moveTo(p.x * width, p.y * height) : ctx.lineTo(p.x * width, p.y * height),
         );
         ctx.stroke();
@@ -251,7 +277,7 @@ export function buildMakeupOverlay(
     if (makeup.contacts.opacity > 0) {
       ctx.save();
       ctx.fillStyle = makeup.contacts.color;
-      ctx.globalAlpha = (makeup.contacts.opacity / 100) * 0.85;
+      ctx.globalAlpha = strength(makeup.contacts, 0.85);
       for (const [irisIdx, eyeRegion] of [
         [LEFT_IRIS, LEFT_EYE],
         [RIGHT_IRIS, RIGHT_EYE],
@@ -266,16 +292,16 @@ export function buildMakeupOverlay(
         ctx.beginPath();
         ctx.arc(centre.x * width, centre.y * height, r, 0, Math.PI * 2);
         ctx.fill();
-        // Leave the pupil dark.
         ctx.globalCompositeOperation = 'destination-out';
         ctx.globalAlpha = 1;
         ctx.beginPath();
-        ctx.arc(centre.x * width, centre.y * height, r * 0.38, 0, Math.PI * 2);
+        ctx.arc(centre.x * width, centre.y * height, r * 0.4, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
       }
       ctx.restore();
     }
   }
-  return canvas;
+  // Straight (non-premultiplied) pixels: canvases premultiply internally, ImageData does not.
+  return ctx.getImageData(0, 0, width, height);
 }

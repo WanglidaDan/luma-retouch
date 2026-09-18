@@ -34,8 +34,11 @@ test.describe('crop and geometry', () => {
     const box = (await handle.boundingBox())!;
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
     await page.mouse.down();
-    await page.mouse.move(box.x - 80, box.y - 60, { steps: 6 });
+    await page.mouse.move(box.x - 40, box.y - 30, { steps: 8 });
+    await page.mouse.move(box.x - 80, box.y - 60, { steps: 8 });
+    await page.waitForTimeout(100);
     await page.mouse.up();
+    await page.waitForTimeout(150);
     const previewW = await storeState<number>(page, 'snapshot.source.preview.width');
     const cropW = await page.evaluate(() => {
       const el = document.querySelector<HTMLElement>('[data-testid="crop-overlay"] > div.border')!;
