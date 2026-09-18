@@ -1,7 +1,7 @@
 # photoditor-buddy
 
-**An open-source photo editor that runs in your browser, on desktop and mobile, with bring-your-own-key AI.**
-No account, no upload, no server. Embed it in any website with one script tag.
+**The free, open-source photo editor with everything inside: 200+ filters, pro adjustments, beauty retouch, text, stickers, collage, batch, and smart AI edits.**
+AI runs on your own Gemini or OpenAI key, the cheapest option there is: cents per image, no subscription, no account. Runs in any browser on desktop and mobile, and embeds in any website with one script tag.
 
 ![photoditor-buddy on desktop](docs/images/editor-desktop.png)
 
@@ -283,7 +283,7 @@ npm run build      # apps/web/dist (app + embed page + SDK demo) and packages/sd
 npm run preview    # serve the production build locally
 ```
 
-`apps/web/dist` is a plain static folder: upload it to GitHub Pages, Netlify, Vercel, S3 or any web host. Ready-made GitHub Actions workflows (CI and GitHub Pages publishing) are in [docs/ci](docs/ci/README.md); copy them into `.github/workflows/` to enable them.
+`apps/web/dist` is a plain static folder: upload it to GitHub Pages, Netlify, Vercel, S3 or any web host. GitHub Actions are included: `.github/workflows/ci.yml` runs the checks and tests on every push, and `.github/workflows/pages.yml` publishes the demo to GitHub Pages (enable **Settings → Pages → Source: GitHub Actions** once in your repository).
 
 The optional relay server for providers that forbid browser calls (fal.ai, Replicate) is in [server/proxy](server/proxy/README.md). Gemini and OpenAI do not need it.
 

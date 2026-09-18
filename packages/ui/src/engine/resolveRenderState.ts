@@ -41,7 +41,7 @@ export function resolveLut(snapshot: EditSnapshot): { lut: Lut3D | null; intensi
  */
 class PortraitCache {
   private maskKey = '';
-  private mask: HTMLCanvasElement | null = null;
+  private mask: ImageData | null = null;
   private maskVersion = 0;
   private makeupKey = '';
   private makeup: HTMLCanvasElement | null = null;

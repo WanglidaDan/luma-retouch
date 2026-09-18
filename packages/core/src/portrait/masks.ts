@@ -30,36 +30,32 @@ function path(
 }
 
 /**
- * Builds the RGBA mask texture used by the skin shader:
+ * Builds the RGBA mask used by the skin shader:
  * R = skin (face oval minus eyes, brows and mouth, feathered), G = teeth (inner mouth),
  * B = eyes (eye polygons), A = blemish spots tapped by the user.
- * Drawn at `width`×`height` (usually the preview size; the GPU rescales for export).
+ *
+ * Returned as `ImageData` on purpose: a canvas stores premultiplied alpha, so pixels with
+ * alpha 0 would lose their RGB channels. `ImageData` keeps the raw values and uploads
+ * straight to WebGL (with premultiplication disabled).
  */
 export function buildPortraitMask(
   faces: FaceLandmarks[],
   width: number,
   height: number,
   blemishSpots: { x: number; y: number; radius: number }[],
-): HTMLCanvasElement {
-  const canvas = document.createElement('canvas');
-  canvas.width = width;
-  canvas.height = height;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) throw new Error('Canvas 2D is not available.');
-  ctx.clearRect(0, 0, width, height);
-
-  // Channel layers are drawn into separate canvases then combined with 'lighter' so they do not overwrite each other.
-  const layer = (draw: (c: CanvasRenderingContext2D) => void): HTMLCanvasElement => {
+): ImageData {
+  const layer = (draw: (c: CanvasRenderingContext2D) => void): Uint8ClampedArray => {
     const l = document.createElement('canvas');
     l.width = width;
     l.height = height;
-    const c = l.getContext('2d')!;
+    const c = l.getContext('2d');
+    if (!c) throw new Error('Canvas 2D is not available.');
     draw(c);
-    return l;
+    return c.getImageData(0, 0, width, height).data;
   };
 
   const skin = layer((c) => {
-    c.fillStyle = 'rgb(255,0,0)';
+    c.fillStyle = '#ffffff';
     for (const face of faces) {
       const feather = faceWidth(face) * width * 0.08;
       c.save();
@@ -79,14 +75,14 @@ export function buildPortraitMask(
     }
   });
   const teeth = layer((c) => {
-    c.fillStyle = 'rgb(0,255,0)';
+    c.fillStyle = '#ffffff';
     for (const face of faces) {
       path(c, polygon(face, LIPS_INNER), width, height);
       c.fill();
     }
   });
   const eyes = layer((c) => {
-    c.fillStyle = 'rgb(0,0,255)';
+    c.fillStyle = '#ffffff';
     for (const face of faces) {
       c.save();
       c.filter = `blur(${faceWidth(face) * width * 0.01}px)`;
@@ -97,34 +93,7 @@ export function buildPortraitMask(
       c.restore();
     }
   });
-  ctx.globalCompositeOperation = 'lighter';
-  ctx.drawImage(skin, 0, 0);
-  ctx.drawImage(teeth, 0, 0);
-  ctx.drawImage(eyes, 0, 0);
-  // Blemish spots go into alpha: draw with white so RGB stays untouched where already painted.
-  ctx.globalCompositeOperation = 'source-over';
-  for (const spot of blemishSpots) {
-    const r = spot.radius * width;
-    const g = ctx.createRadialGradient(
-      spot.x * width,
-      spot.y * height,
-      0,
-      spot.x * width,
-      spot.y * height,
-      r,
-    );
-    g.addColorStop(0, 'rgba(0,0,0,1)');
-    g.addColorStop(0.7, 'rgba(0,0,0,1)');
-    g.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = g;
-    ctx.globalCompositeOperation = 'destination-over';
-    ctx.beginPath();
-    ctx.arc(spot.x * width, spot.y * height, r, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  // Ensure alpha is 0 everywhere except blemish spots: the channel layers were drawn opaque, so we
-  // rebuild alpha from a dedicated spot layer.
-  const spotsLayer = layer((c) => {
+  const spots = layer((c) => {
     for (const spot of blemishSpots) {
       const r = spot.radius * width;
       const g = c.createRadialGradient(
@@ -144,16 +113,17 @@ export function buildPortraitMask(
       c.fill();
     }
   });
-  const combined = ctx.getImageData(0, 0, width, height);
-  const spots = spotsLayer.getContext('2d')!.getImageData(0, 0, width, height).data;
-  const data = combined.data;
+
+  // Each layer was painted in white, so its alpha channel is the coverage we want per channel.
+  const out = new ImageData(width, height);
+  const data = out.data;
   for (let i = 0; i < data.length; i += 4) {
-    // Un-premultiply is unnecessary because each channel was drawn fully opaque; just set alpha.
+    data[i] = skin[i + 3]!;
+    data[i + 1] = teeth[i + 3]!;
+    data[i + 2] = eyes[i + 3]!;
     data[i + 3] = spots[i + 3]!;
   }
-  ctx.globalCompositeOperation = 'source-over';
-  ctx.putImageData(combined, 0, 0);
-  return canvas;
+  return out;
 }
 
 /** Draws a soft ellipse (used for blush and eyeshadow). */

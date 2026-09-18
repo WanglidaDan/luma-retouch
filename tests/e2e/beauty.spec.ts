@@ -11,21 +11,20 @@ test.describe('beauty', () => {
     const before = await previewStats(page);
     await setSlider(page, 'Smooth skin', 90);
     await setSlider(page, 'Brighten skin', 60);
-    await page.waitForTimeout(300);
+    // Rendering is coalesced to animation frames and masks take a moment to build, so poll.
+    const checksum = async (): Promise<number> => (await previewStats(page)).checksum;
+    await expect.poll(checksum, { timeout: 10000 }).not.toBe(before.checksum);
     const smoothed = await previewStats(page);
-    expect(smoothed.checksum).not.toBe(before.checksum);
     await page.getByRole('tab', { name: 'Makeup' }).click();
     await page.getByRole('button', { name: 'Colour #e53935' }).click();
-    await page.waitForTimeout(300);
+    await expect.poll(checksum, { timeout: 10000 }).not.toBe(smoothed.checksum);
     const withLipstick = await previewStats(page);
-    expect(withLipstick.checksum).not.toBe(smoothed.checksum);
     expect(
       await storeState<number>(page, 'snapshot.portrait.makeup.lipstick.opacity'),
     ).toBeGreaterThan(0);
     await page.getByRole('tab', { name: 'Reshape' }).click();
     await setSlider(page, 'Eye size', 60);
-    await page.waitForTimeout(300);
-    expect((await previewStats(page)).checksum).not.toBe(withLipstick.checksum);
+    await expect.poll(checksum, { timeout: 10000 }).not.toBe(withLipstick.checksum);
   });
 
   test('liquify and blemish work; masks and makeup build from synthetic landmarks', async ({
@@ -63,7 +62,7 @@ test.describe('beauty', () => {
           w: number,
           h: number,
           spots: { x: number; y: number; radius: number }[],
-        ) => HTMLCanvasElement;
+        ) => ImageData;
         buildMakeupOverlay: (
           faces: Face[],
           w: number,
@@ -79,7 +78,7 @@ test.describe('beauty', () => {
       });
       const face = { points };
       const mask = core.buildPortraitMask([face], 300, 300, [{ x: 0.5, y: 0.5, radius: 0.05 }]);
-      const md = mask.getContext('2d')!.getImageData(0, 0, 300, 300).data;
+      const md = mask.data;
       let red = 0,
         alpha = 0;
       for (let i = 0; i < md.length; i += 4) {

@@ -13,7 +13,7 @@ export interface DisplacementField {
 
 /** Portrait inputs for the renderer. Masks and makeup are Canvas 2D drawings in image space. */
 export interface PortraitRenderInput {
-  /** RGBA canvas: R = skin, G = teeth, B = eyes, A = blemish spots. */
+  /** RGBA ImageData: R = skin, G = teeth, B = eyes, A = blemish spots (raw, not premultiplied). */
   mask: TextureSource | null;
   /** Increment whenever `mask` pixels change so the renderer re-uploads it. */
   maskVersion: number;

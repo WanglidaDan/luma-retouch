@@ -2,7 +2,7 @@
   "name": "photoditor-buddy",
   "version": "0.1.0",
   "private": true,
-  "description": "Open-source, browser-based photo editor with bring-your-own-key AI. Runs on desktop and mobile browsers and embeds into any website.",
+  "description": "Free open-source photo editor for the browser: 200+ filters, pro adjustments, beauty retouch, collage, and smart AI edits with your own Gemini/OpenAI key (cents per image). Desktop, mobile, embeddable SDK.",
   "license": "MIT",
   "type": "module",
   "workspaces": [
