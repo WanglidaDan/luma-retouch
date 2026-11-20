@@ -4,6 +4,7 @@ import { openSample, previewStats, setSlider, storeState } from './helpers';
 test.describe('adjust, filters, effects', () => {
   test('exposure slider changes the picture and records undo', async ({ page }) => {
     await openSample(page);
+    const autoExposure = await storeState<number>(page, 'snapshot.adjustments.exposure');
     const before = await previewStats(page);
     await page.getByTestId('tool-adjust').click();
     await setSlider(page, 'Exposure', 60);
@@ -13,7 +14,7 @@ test.describe('adjust, filters, effects', () => {
     await expect(page.getByTestId('undo')).toBeEnabled();
     await page.getByTestId('undo').click();
     await page.waitForTimeout(200);
-    expect(await storeState<number>(page, 'snapshot.adjustments.exposure')).toBe(0);
+    expect(await storeState<number>(page, 'snapshot.adjustments.exposure')).toBe(autoExposure);
     const restored = await previewStats(page);
     expect(Math.abs(restored.mean - before.mean)).toBeLessThan(1);
     await page.getByTestId('redo').click();

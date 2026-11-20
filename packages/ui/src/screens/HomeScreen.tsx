@@ -163,19 +163,27 @@ export function HomeScreen() {
           <h2 className="text-[11px] uppercase tracking-[0.18em] text-muted font-semibold">
             A focused portrait workflow
           </h2>
-          <div className="hidden sm:flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <button
               type="button"
               data-testid="open-sample"
-              className="rounded-lg px-3 py-2 text-xs text-muted hover:text-text transition"
+              className="rounded-lg px-2 sm:px-3 py-2 text-[11px] sm:text-xs text-muted hover:text-text transition"
               onClick={() => void openSamplePhoto()}
             >
               Try sample photo
             </button>
             <button
               type="button"
+              data-testid="open-collage"
+              className="rounded-lg px-2 sm:px-3 py-2 text-[11px] sm:text-xs text-muted hover:text-text transition"
+              onClick={() => setScreen('collage')}
+            >
+              Collage
+            </button>
+            <button
+              type="button"
               data-testid="open-batch"
-              className="rounded-lg border border-border px-3 py-2 text-xs text-text hover:border-accent transition"
+              className="rounded-lg border border-border px-2 sm:px-3 py-2 text-[11px] sm:text-xs text-text hover:border-accent transition"
               onClick={() => setScreen('batch')}
             >
               Batch edit
@@ -198,24 +206,6 @@ export function HomeScreen() {
               </div>
             </div>
           ))}
-        </div>
-        <div className="sm:hidden flex items-center gap-2 mb-6">
-          <button
-            type="button"
-            data-testid="open-sample"
-            className="rounded-lg px-3 py-2 text-xs text-muted hover:text-text transition"
-            onClick={() => void openSamplePhoto()}
-          >
-            Try sample photo
-          </button>
-          <button
-            type="button"
-            data-testid="open-batch"
-            className="rounded-lg border border-border px-3 py-2 text-xs text-text hover:border-accent transition"
-            onClick={() => setScreen('batch')}
-          >
-            Batch edit
-          </button>
         </div>
         <p className="text-[11px] text-muted mt-8">
           Open source (MIT). Your photos never leave your device unless you use a cloud AI tool.

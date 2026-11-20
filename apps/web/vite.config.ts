@@ -7,10 +7,10 @@ const root = (p: string): string => fileURLToPath(new URL(p, import.meta.url));
 
 /**
  * Web app build. Three HTML entries: the app, the iframe embed target and the SDK demo.
- * The base path matches the GitHub Pages repository path.
+ * `base: './'` keeps the app portable across GitHub Pages, the native Mac bundle, and local hosts.
  */
 export default defineConfig({
-  base: '/luma-retouch/',
+  base: './',
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {

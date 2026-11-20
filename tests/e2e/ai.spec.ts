@@ -69,12 +69,24 @@ test.describe('AI tools (cloud calls mocked)', () => {
     await page.getByRole('button', { name: 'Close', exact: true }).click();
     await page.getByRole('button', { name: 'Remove & Replace' }).click();
     await page.getByTestId('ai-task-ai-remove').click();
-    // Paint a mask.
-    const box = (await page.getByTestId('interaction-layer').boundingBox())!;
-    await page.mouse.move(box.x + box.width * 0.4, box.y + box.height * 0.4);
-    await page.mouse.down();
-    await page.mouse.move(box.x + box.width * 0.6, box.y + box.height * 0.5, { steps: 5 });
-    await page.mouse.up();
+    // Seed a deterministic painted mask through the e2e store hook. Mobile browser mouse
+    // emulation does not consistently deliver pointer capture to the canvas.
+    await page.evaluate(() => {
+      const hook = (window as unknown as {
+        __pb: {
+          interaction: {
+            getState: () => { set: (patch: Record<string, unknown>) => void };
+          };
+        };
+      }).__pb;
+      const mask = document.createElement('canvas');
+      mask.width = 32;
+      mask.height = 32;
+      const context = mask.getContext('2d')!;
+      context.fillStyle = '#ff2d7a';
+      context.fillRect(8, 8, 16, 16);
+      hook.interaction.getState().set({ aiMask: mask, aiMaskVersion: 1 });
+    });
     await expect(page.getByText(/Runs on OpenAI/)).toBeVisible();
     let sawMask = false;
     await page.route('https://api.openai.com/**', async (route) => {

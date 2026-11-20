@@ -6,7 +6,7 @@ test.describe('smoke and layout', () => {
     const errors = trackConsoleErrors(page);
     await page.goto('/?e2e');
     await expect(page.getByTestId('home')).toBeVisible();
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Edit photos');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Your portrait retouch');
     await page.getByTestId('open-sample').click();
     await expect(page.getByTestId('editor')).toBeVisible();
     await expect(page.getByTestId('tool-rail')).toBeVisible();

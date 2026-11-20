@@ -5,6 +5,19 @@
 Live app: <https://wanglidadan.github.io/luma-retouch/>
 
 Luma Retouch is a photographer-focused fork of [photoditor-buddy](https://github.com/alwaysnelson/photoditor-buddy), used under its MIT license. Importing a photo automatically analyses its light, finds faces on-device, and applies a subtle skin and face finish. It keeps local skin retouching, face reshape, blemish repair, liquify, non-destructive editing, and batch export. Cloud AI tools are optional and require the user's own provider key. The web app is installable from Safari on Mac and responsive on phones.
+
+## Standalone macOS app
+
+The native Mac app wraps the editor in a macOS window and bundles the web editor assets in the app. It does not need a browser tab. The current build targets Apple Silicon and macOS 13 or later. Face detection downloads its small model on first use; selected photos and edits stay on the Mac.
+
+Build on a Mac with Node.js 22.12+ and Xcode Command Line Tools:
+
+```bash
+npm ci
+./macos/build-app.sh
+```
+
+The app bundle is created at `dist/mac/Luma Retouch.app`. The generated build is ad-hoc signed for local use and is not notarized for public distribution.
 AI runs on your own Gemini or OpenAI key, the cheapest option there is: cents per image, no subscription, no account. Runs in any browser on desktop and mobile, and embeds in any website with one script tag.
 
 ![photoditor-buddy on desktop](docs/images/editor-desktop.png)

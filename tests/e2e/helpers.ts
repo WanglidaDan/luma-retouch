@@ -6,6 +6,9 @@ export async function openSample(page: Page): Promise<void> {
   await page.getByTestId('open-sample').click();
   await expect(page.getByTestId('editor')).toBeVisible({ timeout: 20000 });
   await expect(page.getByTestId('preview-canvas')).toBeVisible();
+  await expect
+    .poll(() => storeState<string>(page, 'facesStatus'), { timeout: 30000 })
+    .toMatch(/ready|none|error/);
   // Give the first WebGL frame time to render.
   await page.waitForTimeout(300);
 }
