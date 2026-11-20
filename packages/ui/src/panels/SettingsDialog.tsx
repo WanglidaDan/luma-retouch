@@ -74,7 +74,8 @@ export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () =
       {tab === 'about' && (
         <div className="text-sm leading-relaxed">
           <p className="mb-2">
-            <strong>photoditor-buddy</strong> is an open-source (MIT) photo editor that runs
+            <strong>Luma Retouch</strong> is an open-source (MIT) portrait editor based on
+            photoditor-buddy. It runs
             entirely in your browser. Edits never leave your device unless you use a cloud AI tool
             with your own key.
           </p>
@@ -87,11 +88,11 @@ export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () =
             Source code and documentation:{' '}
             <a
               className="text-accent underline"
-              href="https://github.com/alwaysnelson/photoditor-buddy"
+              href="https://github.com/WanglidaDan/luma-retouch"
               target="_blank"
               rel="noreferrer"
             >
-              github.com/alwaysnelson/photoditor-buddy
+              github.com/WanglidaDan/luma-retouch
             </a>
           </p>
         </div>

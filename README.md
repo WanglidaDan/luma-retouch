@@ -1,6 +1,10 @@
-# photoditor-buddy
+# Luma Retouch
 
-**The free, open-source photo editor with everything inside: 200+ filters, pro adjustments, beauty retouch, text, stickers, collage, batch, and smart AI edits.**
+**Portrait-first photo retouching for photographers. Runs privately in a browser on Mac and iPhone.**
+
+Live app: <https://wanglidadan.github.io/luma-retouch/>
+
+Luma Retouch is a photographer-focused fork of [photoditor-buddy](https://github.com/alwaysnelson/photoditor-buddy), used under its MIT license. It keeps local skin retouching, face reshape, blemish repair, liquify, non-destructive editing, and batch export. Cloud AI tools are optional and require the user's own provider key.
 AI runs on your own Gemini or OpenAI key, the cheapest option there is: cents per image, no subscription, no account. Runs in any browser on desktop and mobile, and embeds in any website with one script tag.
 
 ![photoditor-buddy on desktop](docs/images/editor-desktop.png)

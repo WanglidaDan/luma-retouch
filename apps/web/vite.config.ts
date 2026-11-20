@@ -7,10 +7,10 @@ const root = (p: string): string => fileURLToPath(new URL(p, import.meta.url));
 
 /**
  * Web app build. Three HTML entries: the app, the iframe embed target and the SDK demo.
- * `base: './'` makes the output work from any folder (GitHub Pages, S3, a subpath...).
+ * The base path matches the GitHub Pages repository path.
  */
 export default defineConfig({
-  base: './',
+  base: '/luma-retouch/',
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {

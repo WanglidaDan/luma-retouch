@@ -94,9 +94,9 @@ export function HomeScreen() {
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-2">
             <span className="h-9 w-9 rounded-xl bg-accent text-accent-contrast flex items-center justify-center font-black">
-              pb
+              LR
             </span>
-            <span className="font-semibold text-lg">photoditor-buddy</span>
+            <span className="font-semibold text-lg">Luma Retouch</span>
           </div>
           {!embed && (
             <Button
@@ -111,11 +111,11 @@ export function HomeScreen() {
           )}
         </div>
         <h1 className="text-3xl sm:text-4xl font-bold leading-tight mb-2">
-          Edit photos like a pro, right in your browser.
+          Portrait retouching built for photographers.
         </h1>
         <p className="text-muted mb-8 max-w-xl">
-          No account, no upload. Everything runs on your device. AI tools use your own API key, so
-          you pay the provider directly and only for what you use.
+          Retouch skin, refine faces and batch edit from your Mac or phone. Your photos stay on your
+          device unless you choose a cloud AI tool.
         </p>
         <div className="grid sm:grid-cols-2 gap-3 mb-10">
           <button
