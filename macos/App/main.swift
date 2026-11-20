@@ -20,7 +20,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
     view.uiDelegate = self
     view.setValue(false, forKey: "drawsBackground")
     view.allowsBackForwardNavigationGestures = false
-    view.load(URLRequest(url: URL(string: "luma://app/")!))
+    view.load(URLRequest(url: URL(string: "luma://app/?locale=zh-CN")!))
     webView = view
     schemeHandler = handler
 
@@ -94,7 +94,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
   func downloadDidFinish(_ download: WKDownload) {}
 
   func download(_ download: WKDownload, didFailWithError error: any Error, resumeData: Data?) {
-    showError("The export could not be saved. \(error.localizedDescription)")
+    showError("无法保存导出的照片。\(error.localizedDescription)")
   }
 
   func webView(
@@ -117,15 +117,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
     let mainMenu = NSMenu()
     let appMenuItem = NSMenuItem()
     let appMenu = NSMenu()
-    appMenu.addItem(withTitle: "About Luma Retouch", action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)), keyEquivalent: "")
+    appMenu.addItem(withTitle: "关于 Luma 人像精修", action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)), keyEquivalent: "")
     appMenu.addItem(.separator())
-    appMenu.addItem(withTitle: "Quit Luma Retouch", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+    appMenu.addItem(withTitle: "退出 Luma 人像精修", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
     appMenuItem.submenu = appMenu
     mainMenu.addItem(appMenuItem)
 
     let fileMenuItem = NSMenuItem()
-    let fileMenu = NSMenu(title: "File")
-    let openItem = NSMenuItem(title: "Import Photo…", action: #selector(openPhoto), keyEquivalent: "o")
+    let fileMenu = NSMenu(title: "文件")
+    let openItem = NSMenuItem(title: "导入照片…", action: #selector(openPhoto), keyEquivalent: "o")
     openItem.target = self
     fileMenu.addItem(openItem)
     fileMenuItem.submenu = fileMenu
@@ -141,7 +141,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
 
   private func showError(_ message: String) {
     let alert = NSAlert()
-    alert.messageText = "Luma Retouch"
+    alert.messageText = "Luma 人像精修"
     alert.informativeText = message
     alert.alertStyle = .warning
     alert.addButton(withTitle: "OK")

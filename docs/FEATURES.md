@@ -2,6 +2,8 @@
 
 Everything photoditor-buddy can do, grouped the way the editor shows it.
 
+The standalone Mac app uses Simplified Chinese for its menus and editor interface.
+
 **Legend**
 
 - ✨ **AI (cloud)** — needs your own API key (Gemini or OpenAI). Costs a few cents per image, paid to the provider.

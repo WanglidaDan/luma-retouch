@@ -8,9 +8,9 @@ Luma Retouch is a photographer-focused fork of [photoditor-buddy](https://github
 
 ## Standalone macOS app
 
-The native Mac app wraps the editor in a macOS window and bundles the web editor assets in the app. It does not need a browser tab. The current build targets Apple Silicon and macOS 13 or later. Face detection downloads its small model on first use; selected photos and edits stay on the Mac.
+The native Mac app wraps the editor in a macOS window, uses a Simplified Chinese interface, and bundles the web editor assets in the app. It does not need a browser tab. The current build targets Apple Silicon and macOS 13 or later. Face detection downloads its small model on first use; selected photos and edits stay on the Mac.
 
-**Download:** [Luma Retouch for Apple Silicon (ZIP)](https://github.com/WanglidaDan/luma-retouch/releases/download/v0.2.0/Luma-Retouch-macOS-arm64.zip) · [Release notes](https://github.com/WanglidaDan/luma-retouch/releases/tag/v0.2.0)
+**Download:** [Luma Retouch for Apple Silicon (ZIP)](https://github.com/WanglidaDan/luma-retouch/releases/download/v0.3.0/Luma-Retouch-macOS-arm64.zip) · [Release notes](https://github.com/WanglidaDan/luma-retouch/releases/tag/v0.3.0)
 
 Build on a Mac with Node.js 22.12+ and Xcode Command Line Tools:
 

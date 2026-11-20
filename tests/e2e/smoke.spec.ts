@@ -84,4 +84,20 @@ test.describe('smoke and layout', () => {
     });
     expect(width).toBe(640);
   });
+
+  test('Chinese locale translates the Mac portrait workflow', async ({ page }) => {
+    await page.goto('/?e2e&locale=zh-CN');
+    await expect(page.getByTestId('home')).toContainText('导入并自动修图');
+    await expect(page.getByTestId('home')).toContainText('导入照片，即刻开始人像精修。');
+    await page.getByTestId('open-batch').click();
+    await expect(page.getByRole('heading', { name: '批量修图' })).toBeVisible();
+    await expect(page.getByLabel('使用本机 AI 磨皮与瘦脸')).toBeChecked();
+    await page
+      .getByTestId('batch-files')
+      .setInputFiles([
+        await makeImageFile(page, 'one.png', 320, 240, '#e88a71'),
+        await makeImageFile(page, 'two.png', 320, 240, '#6688bb'),
+      ]);
+    await expect(page.getByTestId('batch-run')).toHaveText('开始处理 2 张照片');
+  });
 });

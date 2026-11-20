@@ -338,7 +338,9 @@ export function BatchScreen() {
           onClick={() => void run()}
           data-testid="batch-run"
         >
-          Process {files.length || ''} photo{files.length === 1 ? '' : 's'}
+          {files.length > 0
+            ? `Process ${files.length} photo${files.length === 1 ? '' : 's'}`
+            : 'Process photos'}
         </Button>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { installChineseUi } from './i18n/chinese';
 import { useEditorStore } from './store/editorStore';
 import { EditorShell } from './components/editor/EditorShell';
 import { HomeScreen } from './screens/HomeScreen';
@@ -25,6 +26,7 @@ export function PhotoEditor({ embed = false }: PhotoEditorProps) {
   const settingsOpen = useEditorStore((s) => s.settingsOpen);
   const setSettingsOpen = useEditorStore((s) => s.setSettingsOpen);
   useEmbedBridge(embed);
+  useEffect(() => installChineseUi(), []);
   useKeyboardShortcuts();
   return (
     <div className="h-full w-full bg-bg text-text overflow-hidden" data-testid="photoditor-buddy">
