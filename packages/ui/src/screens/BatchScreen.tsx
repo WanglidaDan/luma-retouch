@@ -6,16 +6,22 @@ import {
   bitmapToCanvas,
   canvasToBlob,
   createZip,
+  defaultPortraitSettings,
   defaultAdjustments,
+  detectFaces,
   exportFileName,
   fitWithin,
   loadImageFromBlob,
   stackPreset,
   downloadBlob,
   type ExportFormat,
+  type FaceLandmarks,
   type FilterDefinition,
+  type PortraitSettings,
 } from '@photoditor-buddy/core';
 import { useEditorStore } from '../store/editorStore';
+import type { EditSnapshot } from '../store/types';
+import { resolveRenderState } from '../engine/resolveRenderState';
 import { Button } from '../components/common/Button';
 import { Chip, ChipRow } from '../components/common/Chip';
 import { IconButton } from '../components/common/IconButton';
@@ -34,6 +40,11 @@ export function BatchScreen() {
   const [format, setFormat] = useState<ExportFormat>('image/jpeg');
   const [maxEdge, setMaxEdge] = useState<number>(2048);
   const [quality, setQuality] = useState(90);
+  const [portraitEnabled, setPortraitEnabled] = useState(true);
+  const [smooth, setSmooth] = useState(lookTemplate?.portrait.skin.smooth ?? 22);
+  const [faceSlim, setFaceSlim] = useState(lookTemplate?.portrait.reshape.faceSlim ?? 6);
+  const [jaw, setJaw] = useState(lookTemplate?.portrait.reshape.jaw ?? 3);
+  const [reuseLiquify, setReuseLiquify] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const popularFilters = FILTER_CATALOG.filter((f) =>
     ['Minimal', 'Film', 'Portrait', 'Japanese', 'Cinematic'].includes(f.category),
@@ -43,6 +54,7 @@ export function BatchScreen() {
     if (files.length === 0) return;
     const renderer = new Renderer(document.createElement('canvas'));
     const entries: { name: string; data: Uint8Array }[] = [];
+    let faceDetectionWarning = false;
     try {
       for (let i = 0; i < files.length; i++) {
         const file = files[i]!;
@@ -73,16 +85,45 @@ export function BatchScreen() {
           const adjustments = activeFilter
             ? stackPreset(base, activeFilter.preset, intensity)
             : base;
-          const lut = activeFilter?.lut
-            ? (await import('@photoditor-buddy/core')).buildRecipeLut(activeFilter.lut)
-            : null;
+          const { buildRecipeLut } = await import('@photoditor-buddy/core');
+          const lut = activeFilter?.lut ? buildRecipeLut(activeFilter.lut) : null;
+          const portrait = createBatchPortraitSettings({
+            enabled: portraitEnabled,
+            useTemplate,
+            template: lookTemplate?.portrait ?? null,
+            smooth,
+            faceSlim,
+            jaw,
+            reuseLiquify,
+          });
+          let faces: FaceLandmarks[] | null = null;
+          if (portraitEnabled && hasFaceDependentSettings(portrait)) {
+            try {
+              faces = await detectFaces(source);
+            } catch {
+              faceDetectionWarning = true;
+            }
+          }
+          const snapshot: EditSnapshot = {
+            source: {
+              full: source,
+              preview: source,
+              fileName: file.name,
+              mimeType: file.type,
+            },
+            adjustments,
+            filter: null,
+            effect: useTemplate && lookTemplate ? lookTemplate.effect : null,
+            overlays: [],
+            portrait,
+            userLut: null,
+          };
           renderer.render({
+            ...resolveRenderState(snapshot, faces),
             adjustments: lut
               ? { ...adjustments, lut: { id: activeFilter!.id, intensity: intensity * 100 } }
               : adjustments,
             lut,
-            effect: useTemplate && lookTemplate ? lookTemplate.effect : null,
-            portrait: null,
           });
           const blob = await canvasToBlob(renderer.snapshot(), { format, quality: quality / 100 });
           entries.push({
@@ -103,6 +144,11 @@ export function BatchScreen() {
         downloadBlob(createZip(entries), `luma-retouch-batch-${entries.length}.zip`);
       }
       toast(`Done: ${entries.length} photo${entries.length > 1 ? 's' : ''} exported.`, 'success');
+      if (faceDetectionWarning)
+        toast(
+          'Some photos were exported without face retouch because face analysis was unavailable.',
+          'info',
+        );
     } finally {
       renderer.dispose();
       setBusy(null);
@@ -195,8 +241,59 @@ export function BatchScreen() {
             ))}
           </ChipRow>
           <Hint>
-            Tip: edit one photo, open Export → "Batch…" to reuse exactly those sliders and filter
-            here.
+            Tip: edit one photo, open Export → "Batch…" to reuse its adjustments, portrait settings
+            and effect here.
+          </Hint>
+        </Section>
+        <Section title="Portrait retouch">
+          <label className="flex items-center gap-2 text-sm py-1">
+            <input
+              type="checkbox"
+              checked={portraitEnabled}
+              onChange={(event) => setPortraitEnabled(event.target.checked)}
+            />
+            Apply on-device skin and face retouch
+          </label>
+          <Slider
+            label="Smooth skin"
+            min={0}
+            max={100}
+            defaultValue={22}
+            value={smooth}
+            onChange={setSmooth}
+            disabled={!portraitEnabled}
+          />
+          <Slider
+            label="Face slim"
+            min={0}
+            max={100}
+            defaultValue={6}
+            value={faceSlim}
+            onChange={setFaceSlim}
+            disabled={!portraitEnabled}
+          />
+          <Slider
+            label="Jaw refinement"
+            min={0}
+            max={100}
+            defaultValue={3}
+            value={jaw}
+            onChange={setJaw}
+            disabled={!portraitEnabled}
+          />
+          <label className="flex items-center gap-2 text-sm py-1">
+            <input
+              type="checkbox"
+              checked={reuseLiquify}
+              onChange={(event) => setReuseLiquify(event.target.checked)}
+              disabled={!lookTemplate?.portrait.liquify.length}
+            />
+            Reuse body liquify strokes from the last edit
+          </label>
+          <Hint>
+            Face retouch adapts to detected faces. Body liquify reuses the same positions from your
+            last edit, so use a matching pose and crop. Automatic leg or body reshaping is not
+            available yet.
           </Hint>
         </Section>
         <Section title="Output">
@@ -245,5 +342,41 @@ export function BatchScreen() {
         </Button>
       </div>
     </div>
+  );
+}
+
+/** Builds batch portrait settings, adapting face controls while optionally reusing body strokes. */
+function createBatchPortraitSettings(options: {
+  enabled: boolean;
+  useTemplate: boolean;
+  template: PortraitSettings | null;
+  smooth: number;
+  faceSlim: number;
+  jaw: number;
+  reuseLiquify: boolean;
+}): PortraitSettings {
+  if (!options.enabled) return defaultPortraitSettings();
+  const portrait =
+    options.useTemplate && options.template
+      ? structuredClone(options.template)
+      : defaultPortraitSettings();
+  portrait.skin.smooth = options.smooth;
+  portrait.reshape.faceSlim = options.faceSlim;
+  portrait.reshape.jaw = options.jaw;
+  if (!options.useTemplate || !options.template) {
+    portrait.skin.whiten = 4;
+    portrait.skin.eyes = 5;
+  }
+  if (!(options.reuseLiquify && options.template)) portrait.liquify = [];
+  portrait.blemishSpots = [];
+  return portrait;
+}
+
+/** Indicates whether face detection is needed for skin or face shape adjustments. */
+function hasFaceDependentSettings(portrait: PortraitSettings): boolean {
+  return (
+    Object.values(portrait.skin).some((value) => value > 0) ||
+    Object.values(portrait.reshape).some((value) => value !== 0) ||
+    Object.values(portrait.makeup).some((item) => item.opacity > 0)
   );
 }

@@ -21,12 +21,24 @@ export interface PhotoEditorProps {
  */
 export function PhotoEditor({ embed = false }: PhotoEditorProps) {
   const screen = useEditorStore((s) => s.screen);
+  const openFile = useEditorStore((s) => s.openFile);
   const settingsOpen = useEditorStore((s) => s.settingsOpen);
   const setSettingsOpen = useEditorStore((s) => s.setSettingsOpen);
   useEmbedBridge(embed);
   useKeyboardShortcuts();
   return (
     <div className="h-full w-full bg-bg text-text overflow-hidden" data-testid="photoditor-buddy">
+      <input
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          if (file) void openFile(file, file.name);
+          event.target.value = '';
+        }}
+        data-testid="native-open-file-input"
+      />
       <ErrorBoundary>
         {screen === 'home' && <HomeScreen />}
         {screen === 'editor' && <EditorShell />}

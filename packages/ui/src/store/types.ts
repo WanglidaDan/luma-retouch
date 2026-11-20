@@ -93,5 +93,5 @@ export interface EditorData {
         height: number;
       }) => Promise<boolean> | boolean)
     | null;
-  lookTemplate: Pick<EditSnapshot, 'adjustments' | 'filter' | 'effect'> | null;
+  lookTemplate: Pick<EditSnapshot, 'adjustments' | 'filter' | 'effect' | 'portrait'> | null;
 }

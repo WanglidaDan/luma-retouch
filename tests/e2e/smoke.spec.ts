@@ -1,5 +1,11 @@
 import { expect, test } from '@playwright/test';
-import { openSample, previewStats, regionLuminance, trackConsoleErrors } from './helpers';
+import {
+  makeImageFile,
+  openSample,
+  previewStats,
+  regionLuminance,
+  trackConsoleErrors,
+} from './helpers';
 
 test.describe('smoke and layout', () => {
   test('home loads, sample opens, layout fits the viewport', async ({ page }, testInfo) => {
@@ -58,5 +64,24 @@ test.describe('smoke and layout', () => {
       if (tool === 'crop') await page.getByTestId('crop-cancel').click();
     }
     expect(errors.filter((e) => !/face|mediapipe|wasm/i.test(e))).toEqual([]);
+  });
+
+  test('native import control stays available from the editor', async ({ page }) => {
+    await openSample(page);
+    await page
+      .getByTestId('native-open-file-input')
+      .setInputFiles([await makeImageFile(page, 'replacement.png', 640, 480, '#4488cc')]);
+    await expect(page.getByTestId('editor')).toBeVisible();
+    const width = await page.evaluate(() => {
+      const store = (
+        window as unknown as {
+          __pb: {
+            store: { getState: () => { snapshot: { source: { full: { width: number } } } } };
+          };
+        }
+      ).__pb.store.getState();
+      return store.snapshot.source.full.width;
+    });
+    expect(width).toBe(640);
   });
 });

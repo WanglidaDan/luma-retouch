@@ -72,7 +72,7 @@ export interface EditorActions {
         }) => Promise<boolean> | boolean)
       | null,
   ): void;
-  /** Remembers the current look (sliders, filter, effect) so Batch can apply it to other photos. */
+  /** Remembers the current adjustments and portrait look so Batch can reuse them on other photos. */
   saveLookTemplate(): void;
   undo(): void;
   redo(): void;
@@ -450,6 +450,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
         adjustments: present.adjustments,
         filter: present.filter,
         effect: present.effect,
+        portrait: present.portrait,
       },
     });
   },

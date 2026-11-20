@@ -75,9 +75,8 @@ export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () =
         <div className="text-sm leading-relaxed">
           <p className="mb-2">
             <strong>Luma Retouch</strong> is an open-source (MIT) portrait editor based on
-            photoditor-buddy. It runs
-            entirely in your browser. Edits never leave your device unless you use a cloud AI tool
-            with your own key.
+            photoditor-buddy. It runs entirely in your browser. Edits never leave your device unless
+            you use a cloud AI tool with your own key.
           </p>
           <p className="mb-2">
             Free on-device AI: face landmarks (MediaPipe), background removal (MODNet / BiRefNet),

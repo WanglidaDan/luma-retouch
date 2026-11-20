@@ -144,7 +144,9 @@ PNG / JPG / WebP · Quality slider · Size: original, 4K, 2K, 1080p, 720p · Fil
 
 ## 17. Batch
 
-Apply the look from your last edit (all sliders, filter and effect) or a chosen filter to many photos · Format, size and quality · Downloads a ZIP (one file downloads directly)
+Apply the look from your last edit (sliders, filter, effect and portrait settings) or a chosen filter to many photos · 🧠 Face-adaptive skin smoothing, face slimming and jaw refinement · Optionally reuse manual Liquify strokes from the last edit on matching poses · Format, size and quality · Downloads a ZIP (one file downloads directly)
+
+Batch does not automatically slim bodies or reshape legs. For matching poses and crops, save and reuse manual Liquify strokes from an edited portrait.
 
 ## 18. Everyday quality-of-life
 
@@ -162,9 +164,9 @@ Gemini and OpenAI keys with "Test & save" (free check) · Model choice per provi
 
 ## Not included (on purpose)
 
-| Feature                                          | Why                                                                                                                          |
-| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
-| Body reshape ("slim waist", "long legs") one-tap | Needs a body-pose model and produces unrealistic results on many photos; the Liquify brush covers manual body edits honestly |
-| Video editing                                    | Different product                                                                                                            |
-| Cloud storage / accounts                         | The app is private by design; nothing leaves your device                                                                     |
-| Old-photo face restoration on device             | The best free models (GFPGAN) have unclear licences for redistribution; use ✨ Restore old photo instead                     |
+| Feature                                            | Why                                                                                                      |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Automatic body reshape ("slim waist", "long legs") | Needs a body-pose model; manual Liquify strokes can be reused for matching poses in batch instead        |
+| Video editing                                      | Different product                                                                                        |
+| Cloud storage / accounts                           | The app is private by design; nothing leaves your device                                                 |
+| Old-photo face restoration on device               | The best free models (GFPGAN) have unclear licences for redistribution; use ✨ Restore old photo instead |

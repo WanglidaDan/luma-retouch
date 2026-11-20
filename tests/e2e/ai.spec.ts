@@ -72,13 +72,15 @@ test.describe('AI tools (cloud calls mocked)', () => {
     // Seed a deterministic painted mask through the e2e store hook. Mobile browser mouse
     // emulation does not consistently deliver pointer capture to the canvas.
     await page.evaluate(() => {
-      const hook = (window as unknown as {
-        __pb: {
-          interaction: {
-            getState: () => { set: (patch: Record<string, unknown>) => void };
+      const hook = (
+        window as unknown as {
+          __pb: {
+            interaction: {
+              getState: () => { set: (patch: Record<string, unknown>) => void };
+            };
           };
-        };
-      }).__pb;
+        }
+      ).__pb;
       const mask = document.createElement('canvas');
       mask.width = 32;
       mask.height = 32;

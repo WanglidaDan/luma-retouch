@@ -135,7 +135,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
 
   @objc private func openPhoto() {
     webView?.evaluateJavaScript(
-      "document.querySelector('[data-testid=\\\"open-file-input\\\"]')?.click()"
+      "document.querySelector('[data-testid=\\\"native-open-file-input\\\"]')?.click()"
     )
   }
 
