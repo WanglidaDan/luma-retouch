@@ -3,6 +3,7 @@ export * from './math/clamp';
 export * from './math/color';
 export * from './adjustments/types';
 export * from './adjustments/defaults';
+export * from './adjustments/auto';
 export * from './adjustments/merge';
 export * from './adjustments/curves';
 export * from './lut/cube';

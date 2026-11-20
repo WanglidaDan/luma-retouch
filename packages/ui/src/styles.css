@@ -6,15 +6,15 @@
  * photo are judged against a neutral surround. `--accent` can be overridden by the SDK host.
  */
 :root {
-  --bg: #0e1013;
-  --surface: #171a1f;
-  --surface-2: #1f2329;
-  --surface-3: #2a2f37;
-  --border: #2c313a;
-  --text: #eceef2;
-  --text-muted: #9aa3b2;
-  --accent: #ffb454;
-  --accent-contrast: #1a1200;
+  --bg: #10110e;
+  --surface: #191b16;
+  --surface-2: #22251e;
+  --surface-3: #30342b;
+  --border: #30332b;
+  --text: #f0f1e9;
+  --text-muted: #9a9d90;
+  --accent: #d6ff67;
+  --accent-contrast: #151713;
   --ai-from: #8b5cf6;
   --ai-to: #ec4899;
   --danger: #f87171;

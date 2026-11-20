@@ -4,6 +4,7 @@ import {
   bitmapToCanvas,
   defaultAdjustments,
   defaultPortraitSettings,
+  analyzeAutoAdjustments,
   fitWithin,
   loadImageFromBlob,
   loadImageFromUrl,
@@ -46,6 +47,8 @@ export interface EditorActions {
   openFile(file: Blob, fileName?: string): Promise<void>;
   openUrl(url: string, fileName?: string): Promise<void>;
   openCanvas(canvas: HTMLCanvasElement, fileName: string, mimeType?: string): void;
+  /** Automatically balances tone and applies restrained face retouch to the current photo. */
+  autoRetouch(): Promise<void>;
   goHome(): void;
   setScreen(screen: Screen): void;
   setTool(tool: ToolId | null): void;
@@ -183,6 +186,59 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       canRedo: false,
       compare: false,
     });
+    void Promise.resolve().then(() => get().autoRetouch());
+  },
+
+  async autoRetouch() {
+    const starting = get().snapshot;
+    if (!starting) return;
+    const source = starting.source;
+    set({ busy: { message: 'Analysing light and retouching portrait…' }, facesStatus: 'loading' });
+    try {
+      const adjustments = analyzeAutoAdjustments(source.preview);
+      let faces: Awaited<ReturnType<typeof detectFaces>> | null = null;
+      let faceError: unknown = null;
+      try {
+        faces = await detectFaces(source.preview);
+      } catch (error) {
+        faceError = error;
+      }
+      const current = get().snapshot;
+      if (!current || current.source !== source) return;
+      const portrait = defaultPortraitSettings();
+      if (faces?.length) {
+        portrait.skin.smooth = 22;
+        portrait.skin.whiten = 4;
+        portrait.skin.eyes = 5;
+        portrait.reshape.faceSlim = 6;
+        portrait.reshape.jaw = 3;
+      }
+      get().commit({ adjustments: { ...current.adjustments, ...adjustments }, portrait });
+      set({ faces, facesStatus: faces ? (faces.length > 0 ? 'ready' : 'none') : 'error' });
+      if (faces?.length) {
+        get().toast(
+          'Automatic portrait retouch is ready. Fine-tune any adjustment whenever you like.',
+          'success',
+        );
+      } else if (faceError) {
+        get().toast(
+          'Light correction is ready. Face retouch needs an internet connection the first time.',
+          'info',
+        );
+      } else {
+        get().toast(
+          'Automatic light correction is ready. No face was detected in this photo.',
+          'info',
+        );
+      }
+    } catch (error) {
+      if (get().snapshot?.source === source) {
+        set({ faces: null, facesStatus: 'error' });
+        get().toast(error instanceof Error ? error.message : 'Automatic retouch failed.', 'error');
+      }
+    } finally {
+      if (get().snapshot?.source === source) set({ busy: null });
+    }
   },
 
   goHome() {

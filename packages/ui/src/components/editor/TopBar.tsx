@@ -1,4 +1,13 @@
-import { ChevronLeft, Download, Eye, Redo2, RotateCcw, Settings, Undo2 } from 'lucide-react';
+import {
+  ChevronLeft,
+  Download,
+  Eye,
+  Redo2,
+  RotateCcw,
+  Settings,
+  Sparkles,
+  Undo2,
+} from 'lucide-react';
 import { useEditorStore } from '../../store/editorStore';
 import { IconButton } from '../common/IconButton';
 import { Button } from '../common/Button';
@@ -16,6 +25,7 @@ export function TopBar({ onExport, onOpenSettings }: TopBarProps) {
   const redo = useEditorStore((s) => s.redo);
   const resetEdits = useEditorStore((s) => s.resetEdits);
   const setCompare = useEditorStore((s) => s.setCompare);
+  const autoRetouch = useEditorStore((s) => s.autoRetouch);
   const goHome = useEditorStore((s) => s.goHome);
   const embed = useEditorStore((s) => s.embed);
   const fileName = useEditorStore((s) => s.snapshot?.source.fileName ?? '');
@@ -34,6 +44,16 @@ export function TopBar({ onExport, onOpenSettings }: TopBarProps) {
       <div className="hidden sm:block text-xs text-muted truncate max-w-[160px]" title={fileName}>
         {fileName}
       </div>
+      <Button
+        variant="ghost"
+        size="sm"
+        icon={<Sparkles size={14} />}
+        onClick={() => void autoRetouch()}
+        className="ml-1"
+        data-testid="auto-retouch"
+      >
+        Auto retouch
+      </Button>
       <div className="flex-1" />
       <IconButton
         label="Undo"

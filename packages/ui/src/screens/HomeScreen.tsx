@@ -1,34 +1,30 @@
 import { useEffect, useRef, useState } from 'react';
-import { Grid2x2, ImagePlus, Images, Settings, Sparkles, Wand2 } from 'lucide-react';
+import { ImagePlus, Settings, Sparkles } from 'lucide-react';
 import { useEditorStore } from '../store/editorStore';
 import { createSampleImage } from '../engine/sampleImage';
 import { Button } from '../components/common/Button';
 import { AiBadge } from '../components/common/AiBadge';
 
 const HIGHLIGHTS: { title: string; text: string; ai?: 'cloud' | 'local' }[] = [
-  { title: '20+ adjustments', text: 'Light, colour, HSL, curves, split toning, LUTs.' },
   {
-    title: '200+ filters',
-    text: 'Film, vintage, Japanese, Korean, cinematic and more, each with a strength slider.',
-  },
-  {
-    title: 'Beauty',
-    text: 'Skin smoothing, reshape, makeup, liquify, blemish removal.',
+    title: 'Natural skin',
+    text: 'Soft, edge-aware retouching that preserves expression and texture.',
     ai: 'local',
   },
   {
-    title: 'AI tools',
-    text: 'Remove, replace, expand, restore, colorize, styles, hairstyle, sky, relight…',
-    ai: 'cloud',
+    title: 'Face shaping',
+    text: 'Subtle face and jaw refinement, ready to adjust per person.',
+    ai: 'local',
   },
-  { title: 'Creative', text: 'Text, stickers, frames, doodle, mosaic, watermark, effects.' },
   {
-    title: 'Collage & batch',
-    text: 'Grids, posters, stitching and applying one look to many photos.',
+    title: 'Private by default',
+    text: 'Portrait detection and adjustments run directly on your Mac.',
+    ai: 'local',
   },
+  { title: 'Built for delivery', text: 'Undoable edits, before and after, and batch export.' },
 ];
 
-/** Landing screen: open a photo (tap, drop, paste), try a sample, collage or batch. */
+/** Mac-first landing screen for importing a portrait into automatic retouch. */
 export function HomeScreen() {
   const openFile = useEditorStore((s) => s.openFile);
   const openCanvas = useEditorStore((s) => s.openCanvas);
@@ -90,13 +86,13 @@ export function HomeScreen() {
         }}
         data-testid="open-file-input"
       />
-      <div className="max-w-3xl mx-auto px-5 py-10 sm:py-16">
-        <div className="flex items-center justify-between mb-8">
+      <div className="max-w-6xl mx-auto px-5 sm:px-8 py-7 sm:py-10">
+        <div className="flex items-center justify-between mb-14 sm:mb-20">
           <div className="flex items-center gap-2">
-            <span className="h-9 w-9 rounded-xl bg-accent text-accent-contrast flex items-center justify-center font-black">
+            <span className="h-9 w-9 rounded-xl bg-accent text-accent-contrast flex items-center justify-center font-black tracking-tight">
               LR
             </span>
-            <span className="font-semibold text-lg">Luma Retouch</span>
+            <span className="font-semibold tracking-tight text-lg">Luma Retouch</span>
           </div>
           {!embed && (
             <Button
@@ -110,73 +106,116 @@ export function HomeScreen() {
             </Button>
           )}
         </div>
-        <h1 className="text-3xl sm:text-4xl font-bold leading-tight mb-2">
-          Portrait retouching built for photographers.
-        </h1>
-        <p className="text-muted mb-8 max-w-xl">
-          Retouch skin, refine faces and batch edit from your Mac or phone. Your photos stay on your
-          device unless you choose a cloud AI tool.
-        </p>
-        <div className="grid sm:grid-cols-2 gap-3 mb-10">
-          <button
-            type="button"
-            data-testid="open-photo"
-            className="rounded-2xl border-2 border-dashed border-border hover:border-accent bg-surface p-6 text-left transition"
-            onClick={() => fileRef.current?.click()}
-          >
-            <ImagePlus className="text-accent mb-2" />
-            <div className="font-semibold">Open a photo</div>
-            <div className="text-xs text-muted">
-              Tap to choose, or drag & drop / paste anywhere.
+        <div className="grid lg:grid-cols-[1.05fr_0.95fr] gap-10 lg:gap-16 items-center mb-16">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1.5 text-[11px] uppercase tracking-[0.18em] text-muted mb-5">
+              <span className="h-1.5 w-1.5 rounded-full bg-accent" /> Mac Portrait Studio
             </div>
-          </button>
-          <button
-            type="button"
-            data-testid="open-sample"
-            className="rounded-2xl border border-border hover:border-accent bg-surface p-6 text-left transition"
-            onClick={() => void openSamplePhoto()}
-          >
-            <Wand2 className="text-accent mb-2" />
-            <div className="font-semibold">Try a sample photo</div>
-            <div className="text-xs text-muted">Explore every tool with a built-in picture.</div>
-          </button>
-          <button
-            type="button"
-            data-testid="open-collage"
-            className="rounded-2xl border border-border hover:border-accent bg-surface p-6 text-left transition"
-            onClick={() => setScreen('collage')}
-          >
-            <Grid2x2 className="text-accent mb-2" />
-            <div className="font-semibold">Make a collage</div>
-            <div className="text-xs text-muted">Grids, posters, freestyle and long stitches.</div>
-          </button>
-          <button
-            type="button"
-            data-testid="open-batch"
-            className="rounded-2xl border border-border hover:border-accent bg-surface p-6 text-left transition"
-            onClick={() => setScreen('batch')}
-          >
-            <Images className="text-accent mb-2" />
-            <div className="font-semibold">Batch edit</div>
-            <div className="text-xs text-muted">
-              Apply one filter or look to many photos and download a ZIP.
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-semibold leading-[1.04] tracking-[-0.045em] mb-5 max-w-2xl">
+              Your portrait retouch starts as soon as you import.
+            </h1>
+            <p className="text-muted text-sm sm:text-base mb-8 max-w-lg leading-relaxed">
+              Luma balances light, finds faces and applies a restrained skin finish automatically.
+              Keep the result, or fine-tune every detail.
+            </p>
+            <button
+              type="button"
+              data-testid="open-photo"
+              className="group flex items-center gap-4 rounded-2xl bg-accent text-accent-contrast px-5 py-4 text-left shadow-[0_14px_50px_rgba(214,255,103,0.12)] transition hover:brightness-105 active:scale-[0.99]"
+              onClick={() => fileRef.current?.click()}
+            >
+              <span className="h-11 w-11 rounded-xl bg-black/10 flex items-center justify-center">
+                <ImagePlus size={21} />
+              </span>
+              <span className="min-w-0">
+                <span className="block font-semibold">Import and auto retouch</span>
+                <span className="block text-xs opacity-70 mt-0.5">
+                  JPG, PNG, WebP or HEIC · processed locally
+                </span>
+              </span>
+              <span className="ml-3 text-xl transition-transform group-hover:translate-x-1">↗</span>
+            </button>
+            <p className="text-[11px] text-muted mt-3 ml-1">
+              First import downloads the face model once. Your photo stays on this Mac.
+            </p>
+          </div>
+          <div className="relative min-h-[250px] sm:min-h-[330px] rounded-[28px] overflow-hidden border border-border bg-surface">
+            <img
+              src="./sample.jpg"
+              alt="Portrait preview"
+              className="absolute inset-0 h-full w-full object-cover opacity-65"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/5 to-black/10" />
+            <div className="absolute left-5 right-5 bottom-5 flex items-end justify-between gap-3">
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.2em] text-white/65 mb-1">
+                  Automatic finish
+                </div>
+                <div className="font-medium text-white text-lg">Skin · light · face shape</div>
+              </div>
+              <div className="rounded-full border border-white/20 bg-black/25 backdrop-blur px-3 py-1.5 text-[11px] text-white/90">
+                Non-destructive
+              </div>
             </div>
-          </button>
+          </div>
         </div>
-        <h2 className="text-sm uppercase tracking-wider text-muted font-semibold mb-3">
-          What is inside
-        </h2>
-        <div className="grid sm:grid-cols-2 gap-2">
+        <div className="flex items-center justify-between border-t border-border pt-5 mb-3">
+          <h2 className="text-[11px] uppercase tracking-[0.18em] text-muted font-semibold">
+            A focused portrait workflow
+          </h2>
+          <div className="hidden sm:flex items-center gap-2">
+            <button
+              type="button"
+              data-testid="open-sample"
+              className="rounded-lg px-3 py-2 text-xs text-muted hover:text-text transition"
+              onClick={() => void openSamplePhoto()}
+            >
+              Try sample photo
+            </button>
+            <button
+              type="button"
+              data-testid="open-batch"
+              className="rounded-lg border border-border px-3 py-2 text-xs text-text hover:border-accent transition"
+              onClick={() => setScreen('batch')}
+            >
+              Batch edit
+            </button>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-7">
           {HIGHLIGHTS.map((h) => (
-            <div key={h.title} className="rounded-xl bg-surface border border-border p-3">
-              <div className="flex items-center gap-2 font-semibold text-sm">
+            <div
+              key={h.title}
+              className="rounded-xl bg-surface/70 border border-border/80 p-3 sm:p-4"
+            >
+              <div className="flex items-center gap-2 font-semibold text-xs sm:text-sm">
                 {h.ai === 'cloud' ? <Sparkles size={14} className="text-accent" /> : null}
                 {h.title}
                 {h.ai && <AiBadge kind={h.ai} />}
               </div>
-              <div className="text-xs text-muted mt-0.5">{h.text}</div>
+              <div className="text-[11px] sm:text-xs text-muted mt-1.5 leading-relaxed">
+                {h.text}
+              </div>
             </div>
           ))}
+        </div>
+        <div className="sm:hidden flex items-center gap-2 mb-6">
+          <button
+            type="button"
+            data-testid="open-sample"
+            className="rounded-lg px-3 py-2 text-xs text-muted hover:text-text transition"
+            onClick={() => void openSamplePhoto()}
+          >
+            Try sample photo
+          </button>
+          <button
+            type="button"
+            data-testid="open-batch"
+            className="rounded-lg border border-border px-3 py-2 text-xs text-text hover:border-accent transition"
+            onClick={() => setScreen('batch')}
+          >
+            Batch edit
+          </button>
         </div>
         <p className="text-[11px] text-muted mt-8">
           Open source (MIT). Your photos never leave your device unless you use a cloud AI tool.

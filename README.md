@@ -4,7 +4,7 @@
 
 Live app: <https://wanglidadan.github.io/luma-retouch/>
 
-Luma Retouch is a photographer-focused fork of [photoditor-buddy](https://github.com/alwaysnelson/photoditor-buddy), used under its MIT license. It keeps local skin retouching, face reshape, blemish repair, liquify, non-destructive editing, and batch export. Cloud AI tools are optional and require the user's own provider key.
+Luma Retouch is a photographer-focused fork of [photoditor-buddy](https://github.com/alwaysnelson/photoditor-buddy), used under its MIT license. Importing a photo automatically analyses its light, finds faces on-device, and applies a subtle skin and face finish. It keeps local skin retouching, face reshape, blemish repair, liquify, non-destructive editing, and batch export. Cloud AI tools are optional and require the user's own provider key. The web app is installable from Safari on Mac and responsive on phones.
 AI runs on your own Gemini or OpenAI key, the cheapest option there is: cents per image, no subscription, no account. Runs in any browser on desktop and mobile, and embeds in any website with one script tag.
 
 ![photoditor-buddy on desktop](docs/images/editor-desktop.png)
